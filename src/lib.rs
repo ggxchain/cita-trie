@@ -36,8 +36,8 @@
 //! }
 //! ```
 
-mod nibbles;
-mod node;
+pub mod nibbles;
+pub mod node;
 mod tests;
 
 mod db;

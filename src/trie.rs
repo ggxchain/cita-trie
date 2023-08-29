@@ -37,7 +37,7 @@ pub trait Trie<D: DB, H: Hasher> {
     /// If the trie does not contain a value for key, the returned proof contains all
     /// nodes of the longest existing prefix of the key (at least the root node), ending
     /// with the node that proves the absence of the key.
-    fn get_proof(&self, key: &[u8]) -> TrieResult<Vec<Vec<u8>>>;
+    fn get_proof(&self, key: &[u8]) -> TrieResult<Vec<Node>>;
 
     /// return value if key exists, None if key not exist, Error if proof is wrong
     fn verify_proof(
@@ -352,14 +352,14 @@ where
     /// If the trie does not contain a value for key, the returned proof contains all
     /// nodes of the longest existing prefix of the key (at least the root node), ending
     /// with the node that proves the absence of the key.
-    fn get_proof(&self, key: &[u8]) -> TrieResult<Vec<Vec<u8>>> {
+    fn get_proof(&self, key: &[u8]) -> TrieResult<Vec<Node>> {
         let mut path =
             self.get_path_at(self.root.clone(), &Nibbles::from_raw(key.to_vec(), true))?;
         match self.root {
             Node::Empty => {}
             _ => path.push(self.root.clone()),
         }
-        Ok(path.into_iter().rev().map(|n| self.encode_raw(n)).collect())
+        Ok(path.into_iter().rev().collect())
     }
 
     /// return value if key exists, None if key not exist, Error if proof is wrong
@@ -737,7 +737,7 @@ where
         Ok(root_hash)
     }
 
-    fn encode_node(&self, n: Node) -> Vec<u8> {
+    pub fn encode_node(&self, n: Node) -> Vec<u8> {
         // Returns the hash value directly to avoid double counting.
         if let Node::Hash(hash_node) = n {
             return hash_node.borrow().hash.clone();
